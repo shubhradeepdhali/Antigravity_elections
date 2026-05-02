@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElectIQ - Interactive Election Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-deep-navy: #0a1128;
+            --bg-navy: #162447;
+            --gold: #d4af37;
+            --gold-hover: #e5c158;
+            --teal: #008080;
+            --teal-light: #20b2aa;
+            --text-main: #f8f9fa;
+            --text-muted: #a0aec0;
+            --card-bg: rgba(22, 36, 71, 0.7);
+            --sidebar-bg: #0d1836;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--bg-deep-navy) 0%, var(--bg-navy) 100%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* View Transitions */
+        ::view-transition-group(*),
+        ::view-transition-old(*),
+        ::view-transition-new(*) {
+            animation-duration: 0.25s;
+            animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .country-selector {
+            margin-bottom: 2rem;
+        }
+
+        .country-selector select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .country-selector select:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.3);
+        }
+
+        .country-selector select option {
+            background-color: var(--sidebar-bg);
+            color: white;
+        }
+
+        .topics-heading {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .topic-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            text-align: left;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .topic-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        .topic-btn i {
+            color: var(--teal-light);
+            width: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            scroll-behavior: smooth;
+        }
+
+        .welcome-card {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: var(--card-bg);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .welcome-card h1 {
+            color: var(--gold);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .welcome-card p {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .chip {
+            background: rgba(0, 128, 128, 0.15);
+            border: 1px solid rgba(0, 128, 128, 0.3);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .chip:hover {
+            background: var(--teal);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .starter-prompts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .prompt-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .prompt-card:hover {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .prompt-card h4 {
+            color: var(--teal-light);
+            margin-bottom: 0.5rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+        }
+
+        .prompt-card p {
+            text-align: left;
+            font-size: 0.9rem;
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        /* Chat Messages */
+        .message {
+            max-width: 800px;
+            margin: 0 auto 2rem auto;
+            display: flex;
+            gap: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.4s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.2rem;
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .ai-avatar {
+            background: linear-gradient(135deg, var(--gold) 0%, #b8860b 100%);
+            color: #000;
+        }
+
+        .message-content {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            line-height: 1.6;
+            flex: 1;
+        }
+        
+        .user-message .message-content {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .message-content h3 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .message-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .message-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .message-content ul, .message-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .message-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Structured Response Elements */
+        .tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-right: 0.5rem;
+            text-transform: uppercase;
+        }
+        
+        .tag-blue { background: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); }
+        .tag-green { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+        .tag-orange { background: rgba(230, 126, 34, 0.2); color: #e67e22; border: 1px solid rgba(230, 126, 34, 0.3); }
+
+        .timeline {
+            border-left: 2px solid var(--teal);
+            margin: 1.5rem 0 1.5rem 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.85rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--gold);
+            border: 2px solid var(--bg-navy);
+        }
+
+        .timeline-date {
+            font-weight: 700;
+            color: var(--teal-light);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--gold);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Input Area */
+        .input-container {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(to top, var(--bg-deep-navy) 60%, transparent);
+            position: sticky;
+            bottom: 0;
+        }
+
+        .input-box {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.25rem 3.5rem 1.25rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-box input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 0.75rem;
+            background: var(--teal);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            background: var(--teal-light);
+            transform: scale(1.05);
+        }
+
+        .send-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            gap: 4px;
+            padding: 1rem;
+            align-items: center;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .credit-footer {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .credit-footer span {
+            color: var(--gold);
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none; /* Add mobile toggle in production */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-building-columns"></i> ElectIQ
+        </div>
+        
+        <div class="country-selector">
+            <select id="countrySelect">
+                <option value="us">🇺🇸 US Elections</option>
+                <option value="uk">🇬🇧 UK Elections</option>
+                <option value="in">🇮🇳 Indian Elections</option>
+                <option value="eu">🇪🇺 EU Elections</option>
+            </select>
+        </div>
+
+        <div class="topics-heading">Explore Topics</div>
+        <button class="topic-btn" onclick="sendPrompt('Give me a high-level overview of the election process.')"><i class="fa-solid fa-map"></i> Overview</button>
+        <button class="topic-btn" onclick="sendPrompt('How does voter registration work and what are the deadlines?')"><i class="fa-solid fa-id-card"></i> Registration</button>
+        <button class="topic-btn" onclick="sendPrompt('Explain the difference between primaries and caucuses.')"><i class="fa-solid fa-users"></i> Primaries</button>
+        <button class="topic-btn" onclick="sendPrompt('How does the Electoral College work?')"><i class="fa-solid fa-scale-balanced"></i> Electoral College</button>
+        <button class="topic-btn" onclick="sendPrompt('What happens on Voting Day? What do I need to bring?')"><i class="fa-solid fa-check-to-slot"></i> Voting Day</button>
+        <button class="topic-btn" onclick="sendPrompt('How are election results certified?')"><i class="fa-solid fa-stamp"></i> Certification</button>
+        <button class="topic-btn" onclick="sendPrompt('What is the transition process for a new administration?')"><i class="fa-solid fa-arrow-right-arrow-left"></i> Transition</button>
+        
+        <div class="credit-footer">
+            Crafted with precision by<br>
+            <span>Shubhradeep Dhali</span>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="chat-container" id="chatContainer">
+            <!-- Welcome View -->
+            <div class="welcome-card" id="welcomeView">
+                <h1>Welcome to ElectIQ</h1>
+                <p>Your intelligent guide to understanding elections worldwide. Ask questions, explore processes, and get clear, unbiased explanations of complex political mechanisms.</p>
+                
+                <div class="quick-chips">
+                    <div class="chip" onclick="sendPrompt('Explain gerrymandering simply')">Gerrymandering</div>
+                    <div class="chip" onclick="sendPrompt('How does mail-in voting work?')">Mail-in Voting</div>
+                    <div class="chip" onclick="sendPrompt('What is ranked-choice voting?')">Ranked-Choice Voting</div>
+                    <div class="chip" onclick="sendPrompt('What is a swing state?')">Swing States</div>
+                    <div class="chip" onclick="sendPrompt('How is campaign finance regulated?')">Campaign Finance</div>
+                </div>
+
+                <div class="starter-prompts">
+                    <div class="prompt-card" onclick="sendPrompt('How long does it take to certify election results?')">
+                        <h4><i class="fa-regular fa-clock"></i> Timeline</h4>
+                        <p>How long does it take to certify election results?</p>
+                    </div>
+                    <div class="prompt-card" onclick="sendPrompt('Explain how India\'s Lok Sabha elections work.')">
+                        <h4><i class="fa-solid fa-globe"></i> Global Systems</h4>
+                        <p>Explain how India's Lok Sabha elections work.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Messages will be injected here -->
+            
+            <!-- Typing Indicator Container (hidden by default) -->
+            <div class="message" id="typingContainer" style="display: none; margin-bottom: 0;">
+                <div class="avatar ai-avatar"><i class="fa-solid fa-robot"></i></div>
+                <div class="message-content" style="padding: 1rem; background: transparent; border: none;">
+                    <div class="typing-indicator active">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-container">
+            <div class="input-box">
+                <input type="text" id="userInput" placeholder="Ask about elections, voting processes, or political systems..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="handleSend()">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const welcomeView = document.getElementById('welcomeView');
+        const userInput = document.getElementById('userInput');
+        const typingContainer = document.getElementById('typingContainer');
+        const countrySelect = document.getElementById('countrySelect');
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                handleSend();
+            }
+        }
+
+        function sendPrompt(text) {
+            userInput.value = text;
+            handleSend();
+        }
+
+        function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // Hide welcome screen on first message
+            if (welcomeView.style.display !== 'none') {
+                welcomeView.style.display = 'none';
+            }
+
+            // Append User Message
+            appendMessage(text, 'user');
+            userInput.value = '';
+
+            // Show typing indicator
+            chatContainer.appendChild(typingContainer); // Move to bottom
+            typingContainer.style.display = 'flex';
+            scrollToBottom();
+
+            generateRealResponse(text);
+        }
+
+        function appendMessage(content, sender, isHtml = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const avatarHtml = sender === 'user' 
+                ? `<div class="avatar user-avatar"><i class="fa-solid fa-user"></i></div>`
+                : `<div class="avatar ai-avatar"><i class="fa-solid fa-robot"></i></div>`;
+
+            let contentHtml = '';
+            if (isHtml) {
+                contentHtml = content;
+            } else {
+                contentHtml = `<p>${escapeHtml(content)}</p>`;
+            }
+
+            messageDiv.innerHTML = `
+                ${avatarHtml}
+                <div class="message-content">
+                    ${contentHtml}
+                </div>
+            `;
+
+            chatContainer.insertBefore(messageDiv, typingContainer);
+            scrollToBottom();
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTo({
+                top: chatContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // Real API Call to Backend
+        async function generateRealResponse(query) {
+            const country = countrySelect.value;
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: query,
+                        country: country
+                    })
+                });
+
+                typingContainer.style.display = 'none';
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Network response was not ok');
+                }
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Use view transitions if supported for smooth UI updates
+                if (!document.startViewTransition) {
+                    appendMessage(data.response, 'ai', true);
+                } else {
+                    document.startViewTransition(() => {
+                        appendMessage(data.response, 'ai', true);
+                    });
+                }
+            } catch (error) {
+                typingContainer.style.display = 'none';
+                console.error('Error fetching from backend:', error);
+                const errorHtml = `
+                    <h3><span class="tag tag-orange">Error</span> Connection Failed</h3>
+                    <p>Sorry, I couldn't connect to the backend server. Please ensure:</p>
+                    <ul>
+                        <li>The Python Flask server is running on port 5000.</li>
+                        <li>You have set the <code>GEMINI_API_KEY</code> environment variable.</li>
+                    </ul>
+                    <p>Error details: ${escapeHtml(error.message)}</p>
+                `;
+                appendMessage(errorHtml, 'ai', true);
+            }
+        }
+    </script>
+</body>
+</html>
