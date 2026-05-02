@@ -18,6 +18,32 @@ ElectIQ is a stunning, interactive web application that leverages the power of t
 
 ---
 
+## 🎯 Hackathon Information
+
+### 🏢 Chosen Vertical
+**Civic Tech & Education** - This project aims to empower citizens by making complex electoral systems, voting procedures, and political nuances accessible and easy to understand globally.
+
+### 🧠 Approach and Logic
+The goal was to create an intelligent system that feels like a premium conversational agent rather than a generic search engine. To achieve this, the logic was divided into three core pillars:
+1. **Unbiased Tone System Prompting:** The Gemini AI is strictly instructed via a backend system prompt to act neutrally and avoid political bias, ensuring all information is purely educational.
+2. **Context-Aware Formatting:** Instead of returning plain text or markdown, the AI is prompted to return pre-formatted semantic HTML (using custom CSS classes for tags, timelines, and info-cards).
+3. **Seamless UX:** A carefully crafted frontend interface intercepts the backend HTML payloads and injects them directly into the DOM with smooth animations, giving users a highly polished, app-like experience.
+
+### ⚙️ How the Solution Works
+1. The user selects a country context (US, UK, India, EU) and types a question or clicks a Quick Prompt chip in the `electiq.html` interface.
+2. The frontend JavaScript triggers an asynchronous `fetch` POST request to the Flask server (`backend.py`) carrying the user's query and regional context.
+3. The Flask server combines the query with a rigid System Prompt designed to enforce HTML structure, educational neutrality, and visual formatting rules.
+4. The backend securely queries the **Google Gemini 2.5 Flash** model via the Generative AI SDK.
+5. The generated HTML response is returned to the frontend, where it is dynamically appended to the chat interface alongside an animated typing indicator.
+
+### 🤔 Assumptions Made
+- Users will access the app using a modern web browser that supports the Fetch API and CSS variables.
+- Information requests are generally inquisitive and educational, rather than seeking real-time polling data or highly subjective political opinions.
+- The Gemini model will consistently adhere to the structural HTML constraints defined in the system prompt.
+- The app is deployed in an environment (like Google Cloud Run) that automatically injects the `$PORT` environment variable for the web server to bind to.
+
+---
+
 ## 🚀 Getting Started
 
 To run ElectIQ locally on your machine, follow these simple steps:
