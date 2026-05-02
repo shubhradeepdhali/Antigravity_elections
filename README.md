@@ -80,6 +80,25 @@ Select a country, type a question (or click a quick chip), and start learning!
 
 ---
 
+## ☁️ Cloud Deployment (Google Cloud Run)
+
+This project is completely containerized and production-ready for deployment on Google Cloud Run.
+
+### Quick Deploy via Google Cloud Console
+1. Push this repository to your GitHub account.
+2. Visit the [Google Cloud Run Console](https://console.cloud.google.com/run).
+3. Click **Create Service**.
+4. Select **"Continuously deploy new revisions from a source repository"** (Set up with Cloud Build).
+5. Connect your GitHub account and select this repository.
+6. Under Build Configuration, select the provided **Dockerfile**.
+7. Under **Authentication**, select **Allow unauthenticated invocations** (Public access).
+8. Under **Container, Variables & Secrets**, add a new Environment Variable named `GEMINI_API_KEY` and paste your actual Google Gemini API key.
+9. Click **Create**.
+
+Google Cloud will automatically build your Docker image and provide a live, scalable `https://` URL!
+
+---
+
 ## 👨‍💻 Author
 
 Crafted with precision by **Shubhradeep Dhali**
