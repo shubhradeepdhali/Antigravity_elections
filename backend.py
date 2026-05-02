@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -17,6 +17,11 @@ genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # Use the gemini-2.5-flash model 
 model = genai.GenerativeModel('gemini-2.5-flash')
+
+@app.route('/')
+def index():
+    # Serve the frontend HTML file
+    return send_file('electiq.html')
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -84,7 +89,9 @@ def chat():
         }), 500
 
 if __name__ == '__main__':
-    # Run the server on port 5000
-    print("ElectIQ Backend running on http://localhost:5000")
+    # Cloud Run provides the PORT environment variable (defaulting to 8080)
+    port = int(os.environ.get('PORT', 5000))
+    print(f"ElectIQ Backend running on http://0.0.0.0:{port}")
     print("Make sure you have set the GEMINI_API_KEY environment variable!")
-    app.run(debug=True, port=5000)
+    # Listen on all public IPs (0.0.0.0) so Cloud Run can route traffic to it
+    app.run(host='0.0.0.0', port=port, debug=True)
